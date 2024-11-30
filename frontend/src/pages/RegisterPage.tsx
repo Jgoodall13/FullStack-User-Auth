@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const RegisterPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +20,7 @@ const RegisterPage = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, name }),
         }
       );
 
@@ -45,6 +46,18 @@ const RegisterPage = () => {
         </h1>
         {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="mt-6">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
+            <input
+              type="name"
+              placeholder="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-300 focus:outline-none"
+            />
+          </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Email

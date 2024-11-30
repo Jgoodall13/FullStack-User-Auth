@@ -6,10 +6,12 @@ const UserSchema: Schema = new Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    refreshToken: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    about: { type: String },
+    hobbies: [{ type: String }],
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // New field for friend requests
+    pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    refreshToken: { type: String },
   },
   { timestamps: true }
 );

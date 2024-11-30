@@ -3,6 +3,7 @@ import User from "../models/User";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../utils/logger";
+import { log } from "console";
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
@@ -65,8 +66,6 @@ export const loginUser = async (req: Request, res: Response) => {
       { expiresIn: "7d" }
     );
 
-    console.log("JWT_SECRET during signing:", process.env.JWT_SECRET);
-
     // Save the refresh token in the database
     user.refreshToken = refreshToken; // For single token setup
     // user.refreshTokens.push(refreshToken); // For multiple tokens setup
@@ -101,6 +100,30 @@ export const logoutUser = async (req: Request, res: Response) => {
     res.status(200).json({ message: "User logged out successfully" });
   } catch (err: any) {
     console.error("Error during logout:", err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const userInfo = async (req: Request, res: Response) => {
+  try {
+    // The user ID is extracted from the token by the `authenticateToken` middleware.
+    const userId = req.user.id;
+    console.log("Logged-in user ID:", userId);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Respond with the specific user info
+    res.status(200).json({
+      name: user.name,
+      email: user.email,
+      about: user.about || "No about info provided",
+      hobbies: user.hobbies || [],
+    });
+  } catch (err: any) {
+    console.error("Error fetching user info:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };

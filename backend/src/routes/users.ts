@@ -4,6 +4,7 @@ import {
   createUser,
   loginUser,
   logoutUser,
+  userInfo,
 } from "../controllers/userController";
 import {
   authenticateToken,
@@ -58,6 +59,13 @@ router.get("/admin", authenticateToken, authorizeRole("admin"), (req, res) => {
  * @access Private
  */
 router.post("/refresh", refreshAccessToken);
+
+/**
+ * @route POST /api/v1/users/refresh
+ * @desc User Info
+ * @access Private
+ */
+router.get("/info", authenticateToken, userInfo);
 
 /**
  * @route POST /api/v1/users/logout

@@ -1,6 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import AppRoutes from "./routes/AppRoutes";
+import Layout from "./components/Layout";
 
 const App = () => {
   const { isAuthenticated } = useAuth();
@@ -9,7 +10,9 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <AppRoutes isAuthenticated={isAuthenticated} />
+      <Layout>
+        <AppRoutes isAuthenticated={isAuthenticated} />
+      </Layout>
     </BrowserRouter>
   );
 };

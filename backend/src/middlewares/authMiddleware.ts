@@ -6,10 +6,8 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const SECRET_KEY = process.env.JWT_SECRET!;
-
   const authHeader = req.headers.authorization;
-  console.log("Authorization Header:", authHeader);
+  console.log("Auth Header:", authHeader);
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res
@@ -18,12 +16,11 @@ export const authenticateToken = (
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("Extracted Token:", token);
 
   try {
-    const decoded = jwt.verify(token, SECRET_KEY);
-    console.log("Decoded Token Payload:", decoded);
-    req.user = decoded as jwt.JwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    req.user = decoded;
+    console.log("Decoded Token:", decoded);
     next();
   } catch (err: any) {
     console.error("Invalid token:", err.message);

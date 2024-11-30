@@ -6,7 +6,7 @@ import logger from "../utils/logger";
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsersDuplicate = async (req: Request, res: Response) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
@@ -70,11 +70,14 @@ export const loginUser = async (req: Request, res: Response) => {
     // Save the refresh token in the database
     user.refreshToken = refreshToken; // For single token setup
     // user.refreshTokens.push(refreshToken); // For multiple tokens setup
-    await user.save();
-
-    res
-      .status(200)
-      .json({ message: "Login successful", accessToken, refreshToken });
+    const mongoreturn = await user.save();
+    const mongoId = mongoreturn._id;
+    res.status(200).json({
+      message: "Login successful",
+      accessToken,
+      refreshToken,
+      mongoId,
+    });
   } catch (err: any) {
     console.error("Error during login:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });

@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Save token to localStorage and update state
       localStorage.setItem("authToken", token);
       localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("mongoId", data.mongoId);
       setIsAuthenticated(true);
     } catch (err: any) {
       console.error("Login failed:", err.message);

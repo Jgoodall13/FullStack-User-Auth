@@ -1,13 +1,18 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 
-const UserSchema: Schema = new Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  refreshToken: { type: String },
-  role: { type: String, enum: ["user", "admin"], default: "user" },
-});
+const UserSchema: Schema = new Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    refreshToken: { type: String },
+    role: { type: String, enum: ["user", "admin"], default: "user" },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // New field for friend requests
+  },
+  { timestamps: true }
+);
 
 // Hash the password before saving
 UserSchema.pre("save", async function (next) {

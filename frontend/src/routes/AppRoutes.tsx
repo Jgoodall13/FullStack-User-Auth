@@ -7,8 +7,6 @@ import ProtectedRoute from "../pages/ProtectedRoute";
 import ProfilePage from "../pages/ProfilePage";
 
 const AppRoutes = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
-  console.log("Rendering AppRoutes with isAuthenticated:", isAuthenticated);
-
   return (
     <Routes>
       {/* Default Route */}

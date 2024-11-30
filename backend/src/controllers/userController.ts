@@ -108,7 +108,6 @@ export const userInfo = async (req: Request, res: Response) => {
   try {
     // The user ID is extracted from the token by the `authenticateToken` middleware.
     const userId = req.user.id;
-    console.log("Logged-in user ID:", userId);
 
     const user = await User.findById(userId);
     if (!user) {

@@ -1,44 +1,26 @@
-import { useState, useEffect } from "react";
-
-type FriendsList = {
-  name: string;
-  _id: string;
-};
+import { useContext, useEffect, useState } from "react";
+import { FriendContext } from "../contexts/FriendContext";
 
 export default function Friends() {
-  const [friends, setFriends] = useState<FriendsList[]>([]);
+  const context = useContext(FriendContext);
   const [error, setError] = useState<string | null>(null);
-  const authToken = localStorage.getItem("authToken");
 
-  const fetchFriends = async () => {
-    try {
-      if (!authToken) {
-        throw new Error("Authorization token is missing");
-      }
+  if (!context) {
+    throw new Error("Friends must be used within a FriendProvider");
+  }
 
-      const response = await fetch("http://localhost:3000/api/v1/friends", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setFriends(data.friends);
-    } catch (err: any) {
-      console.error("Failed to fetch friends:", err.message);
-      setError(err.message); // Set error to display on the UI
-    }
-  };
+  const { fetchFriends, friends } = context;
 
   useEffect(() => {
-    fetchFriends();
-  }, []);
+    const loadFriends = async () => {
+      try {
+        await fetchFriends();
+      } catch (err: any) {
+        setError("Failed to fetch friends");
+      }
+    };
+    loadFriends();
+  }, [fetchFriends]); // Correctly add fetchFriends as a dependency
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">

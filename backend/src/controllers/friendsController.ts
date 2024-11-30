@@ -108,9 +108,12 @@ export const respondToFriendRequest = async (req: Request, res: Response) => {
         .json({ message: "No pending friend request from this user" });
     }
 
+    let requester = null;
+
     if (action === "confirm") {
       user.friends.push(requesterId);
-      const requester = await User.findById(requesterId);
+
+      requester = await User.findById(requesterId);
       if (requester) {
         requester.friends.push(user._id);
 
@@ -127,9 +130,15 @@ export const respondToFriendRequest = async (req: Request, res: Response) => {
     );
     await user.save();
 
-    res
-      .status(200)
-      .json({ message: `Friend request ${action}ed successfully` });
+    logger.info("Requester ID:", requesterId);
+    logger.info("Logged-in User ID:", req.user.id);
+    logger.info("Requester after processing:", requester);
+
+    res.status(200).json({
+      message: `Friend request ${action}ed successfully`,
+      _id: requesterId,
+      name: requester ? requester.name : null,
+    });
   } catch (err: any) {
     console.error("Error responding to friend request:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });

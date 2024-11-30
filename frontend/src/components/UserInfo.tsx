@@ -10,9 +10,7 @@ type User = {
 
 export default function UserInfo() {
   const authToken = localStorage.getItem("authToken");
-  const mongoId = localStorage.getItem("mongoId");
   const navigate = useNavigate();
-  console.log("Auth Token:", authToken);
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -31,18 +29,15 @@ export default function UserInfo() {
           Authorization: `Bearer ${authToken}`,
         },
       });
-      console.log("Response:", response);
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Redirect to login if unauthorized
-          // navigate("/login");
+          navigate("/login");
         }
         throw new Error(`Error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log("User data:", data);
       setUser({
         name: data.name,
         email: data.email,

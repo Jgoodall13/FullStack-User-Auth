@@ -1,92 +1,19 @@
-import { useEffect, useState } from "react";
-
-type Pending = {
-  name: string;
-  _id: string;
-};
+import { useContext, useEffect, useState } from "react";
+import { FriendContext } from "../contexts/FriendContext";
 
 export default function PendingFriends() {
-  const [pendingRequests, setPendingRequests] = useState<Pending[]>([]);
+  const context = useContext(FriendContext);
   const [error, setError] = useState<string | null>(null);
-  const authToken = localStorage.getItem("authToken");
+
+  if (!context) {
+    throw new Error("Friends must be used within a FriendProvider");
+  }
+
+  const { fetchPending, pendingRequests, handleFriendAction } = context;
 
   useEffect(() => {
-    const fetchPending = async () => {
-      if (!authToken) {
-        setError("Authorization token is missing.");
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          "http://localhost:3000/api/v1/friends/requests",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        setPendingRequests(data.pendingRequests);
-      } catch (err: any) {
-        setError(err.message);
-        console.error("Failed to fetch pending requests:", err.message);
-      }
-    };
-
     fetchPending();
-  }, [authToken]);
-
-  const handleFriendAction = async (
-    id: string,
-    action: "confirm" | "ignore"
-  ) => {
-    if (!authToken) {
-      setError("Authorization token is missing.");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        "http://localhost:3000/api/v1/friends/respond",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            requesterId: id,
-            action,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-
-      // Update UI based on action
-      if (action === "confirm") {
-        setPendingRequests(pendingRequests.filter((req) => req._id !== id));
-      } else if (action === "ignore") {
-        setPendingRequests(pendingRequests.filter((req) => req._id !== id));
-      }
-    } catch (err: any) {
-      setError(err.message);
-      console.error(`Failed to ${action} request:`, err.message);
-    }
-  };
+  }, [fetchPending]);
 
   return (
     <div>

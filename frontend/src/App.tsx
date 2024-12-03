@@ -3,6 +3,9 @@ import { useAuth } from "./contexts/AuthContext";
 import AppRoutes from "./routes/AppRoutes";
 import Layout from "./components/Layout";
 import { FriendProvider } from "./contexts/FriendContext";
+import { ProfileProvider } from "./contexts/ProfileContext";
+import { UserProvider } from "./contexts/UserContext";
+import "./App.css";
 
 const App = () => {
   const { isAuthenticated } = useAuth();
@@ -11,9 +14,13 @@ const App = () => {
   return (
     <BrowserRouter>
       <Layout>
-        <FriendProvider>
-          <AppRoutes isAuthenticated={isAuthenticated} />
-        </FriendProvider>
+        <UserProvider>
+          <ProfileProvider>
+            <FriendProvider>
+              <AppRoutes isAuthenticated={isAuthenticated} />
+            </FriendProvider>
+          </ProfileProvider>
+        </UserProvider>
       </Layout>
     </BrowserRouter>
   );

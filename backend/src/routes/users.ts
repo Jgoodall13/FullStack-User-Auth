@@ -1,10 +1,13 @@
-import { Router } from "express";
+import e, { Router } from "express";
 import {
   getAllUsersDuplicate,
   createUser,
   loginUser,
   logoutUser,
   userInfo,
+  editHobbies,
+  getHobbies,
+  getProfile,
 } from "../controllers/userController";
 import {
   authenticateToken,
@@ -79,5 +82,26 @@ router.post("/logout", authenticateToken, logoutUser);
  * @desc Fetch all friends and pending friend requests
  * @access Private
  */
+
+/**
+ * @route POST /api/v1/users/hobbies
+ * @desc Edit user hobbies
+ * @access Private
+ */
+router.put("/hobbies", authenticateToken, editHobbies);
+
+/**
+ * @route POST /api/v1/users/hobbies
+ * @desc Edit user hobbies
+ * @access Private
+ */
+router.get("/hobbies", authenticateToken, getHobbies);
+
+/**
+ * @route POST /api/v1/users/profile
+ * @desc Edit user hobbies
+ * @access Private
+ */
+router.get("/profile", authenticateToken, getProfile);
 
 export default router;

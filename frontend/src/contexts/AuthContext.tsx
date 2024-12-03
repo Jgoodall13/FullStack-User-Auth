@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
         },
         body: JSON.stringify({ email, password }),
       });
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("authToken", token);
       localStorage.setItem("refreshToken", data.refreshToken);
       localStorage.setItem("mongoId", data.mongoId);
+
       setIsAuthenticated(true);
     } catch (err: any) {
       console.error("Login failed:", err.message);
@@ -42,25 +44,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    const authToken = localStorage.getItem("authToken");
-    const refreshToken = localStorage.getItem("refreshToken");
+  const logout = async () => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+      const refreshToken = localStorage.getItem("refreshToken");
 
-    console.log("AuthToken:", authToken);
-    console.log("RefreshToken:", refreshToken);
+      // Remove tokens from local storage
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("mongoId");
+      localStorage.removeItem("refreshToken");
 
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("refreshToken");
-    setIsAuthenticated(false);
+      // Update authentication state
+      setIsAuthenticated(false);
 
-    fetch("http://localhost:3000/api/v1/users/logout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
-      },
-      body: JSON.stringify({ refreshToken }),
-    }).catch((err) => console.error("Logout failed:", err));
+      // Perform logout request
+      if (authToken && refreshToken) {
+        await fetch("http://localhost:3000/api/v1/users/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

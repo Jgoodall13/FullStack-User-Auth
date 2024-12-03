@@ -1,8 +1,13 @@
+import { useEffect, useLayoutEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 
 const DashboardPage = () => {
   const { logout } = useAuth();
+
+  useLayoutEffect(() => {}, []);
+
+  useEffect(() => {}), [];
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">

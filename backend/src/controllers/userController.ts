@@ -3,7 +3,6 @@ import User from "../models/User";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../utils/logger";
-import { log } from "console";
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
@@ -40,7 +39,6 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  logger.info("in the login controller ", req.body);
 
   try {
     const user: any | null = await User.findOne({ email });
@@ -108,8 +106,8 @@ export const userInfo = async (req: Request, res: Response) => {
   try {
     // The user ID is extracted from the token by the `authenticateToken` middleware.
     const userId = req.user.id;
-
-    const user = await User.findById(userId);
+    logger.warn("in the user info controller ", req.user);
+    const user = await User.findById(userId).populate("friends", "name email");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -120,9 +118,90 @@ export const userInfo = async (req: Request, res: Response) => {
       email: user.email,
       about: user.about || "No about info provided",
       hobbies: user.hobbies || [],
+      friends: user.friends || [],
     });
   } catch (err: any) {
     console.error("Error fetching user info:", err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const editHobbies = async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const { hobbies } = req.body; // Expect hobbies to be an array
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Ensure oldHobbies is always an array
+    const oldHobbies = Array.isArray(user.hobbies)
+      ? user.hobbies
+      : user.hobbies.split(",").map((hobby: string) => hobby.trim());
+
+    // Merge and flatten the arrays, ensuring no nested arrays
+    const updatedHobbies = [...oldHobbies, ...hobbies].flat();
+
+    // Remove duplicates and trim whitespace from each hobby
+    user.hobbies = Array.from(
+      new Set(updatedHobbies.map((hobby) => hobby.trim()))
+    );
+
+    // Save the updated user document
+    await user.save();
+
+    // Respond with success and updated hobbies
+    res.status(200).json({
+      message: "Hobbies updated successfully",
+      hobbies: user.hobbies,
+    });
+  } catch (err: any) {
+    console.error("Error updating hobbies:", err.message);
+
+    // Respond with an error
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+export const getHobbies = async (req: Request, res: Response) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const hobbies = user.hobbies || [];
+    res.status(200).json({ hobbies });
+  } catch (err: any) {
+    console.error("Error fetching hobbies:", err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const getProfile = async (req: Request, res: Response) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log("User found", user);
+    res.status(200).json({
+      name: user.name,
+      email: user.email,
+      about: user.about || "No about info provided",
+      hobbies: user.hobbies || [],
+    });
+  } catch (err: any) {
+    console.error("Error fetching user profile:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };

@@ -1,26 +1,15 @@
-import { useContext, useEffect, useState } from "react";
-import { FriendContext } from "../contexts/FriendContext";
+import { useEffect, useState } from "react";
+import { useProfile } from "../contexts/ProfileContext";
 
 export default function Friends() {
-  const context = useContext(FriendContext);
+  const { profile, fetchProfile } = useProfile();
   const [error, setError] = useState<string | null>(null);
 
-  if (!context) {
-    throw new Error("Friends must be used within a FriendProvider");
-  }
-
-  const { fetchFriends, friends } = context;
-
   useEffect(() => {
-    const loadFriends = async () => {
-      try {
-        await fetchFriends();
-      } catch (err: any) {
-        setError("Failed to fetch friends");
-      }
-    };
-    loadFriends();
-  }, [fetchFriends]); // Correctly add fetchFriends as a dependency
+    fetchProfile();
+  }, []);
+
+  const friends = profile?.friends || [];
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">

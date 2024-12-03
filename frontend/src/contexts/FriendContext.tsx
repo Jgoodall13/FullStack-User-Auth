@@ -1,4 +1,11 @@
-import { createContext, useState, ReactNode, useCallback } from "react";
+import {
+  createContext,
+  useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useContext,
+} from "react";
 
 type FriendContextType = {
   fetchFriends: () => Promise<void>;
@@ -9,6 +16,10 @@ type FriendContextType = {
     id: string,
     action: "confirm" | "ignore"
   ) => Promise<void>;
+  setFriends: React.Dispatch<React.SetStateAction<FriendsList[]>>;
+  clearState: () => void;
+  fetchProfile: () => Promise<void>;
+  profile: any[];
 };
 
 type Pending = {
@@ -33,6 +44,7 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
       const response = await fetch("http://localhost:3000/api/v1/friends", {
         headers: {
           Authorization: `Bearer ${authToken}`,
+          "Cache-Control": "no-cache",
         },
       });
 
@@ -57,6 +69,7 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authToken}`,
+            "Cache-Control": "no-cache",
           },
         }
       );
@@ -85,6 +98,7 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authToken}`,
+            "Cache-Control": "no-cache",
           },
           body: JSON.stringify({
             requesterId: id,
@@ -101,6 +115,8 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
       console.log(data);
 
       // Update UI based on action
+
+      //TODO: this isn't updating the state correctly. Only shows up on frefresh. Will ned tow ork on the logic here
       if (action === "confirm") {
         console.log("confirming with data:", data);
         setPendingRequests(pendingRequests.filter((req) => req._id !== id));
@@ -114,6 +130,11 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const clearState = () => {
+    setFriends([]);
+    setPendingRequests([]);
+  };
+
   return (
     <FriendContext.Provider
       value={{
@@ -122,6 +143,8 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
         friends,
         pendingRequests,
         handleFriendAction,
+        setFriends,
+        clearState,
       }}
     >
       {children}
@@ -129,4 +152,10 @@ export const FriendProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export { FriendContext };
+export const useFriend = () => {
+  const context = useContext(FriendContext);
+  if (!context) {
+    throw new Error("useFriend must be used within an FriendProvider");
+  }
+  return context;
+};

@@ -1,13 +1,15 @@
 import { useUser } from "../contexts/UserContext";
 import { useProfile } from "../contexts/ProfileContext";
 import { useEffect, useState, useRef } from "react";
+// import { useFetchProfile } from "../hooks/useFetchProfile";
 
 export default function UserInfo() {
-  const { loading, error } = useUser();
+  // const { profile, loading, error } = useFetchProfile();
+  const { loading: loading, error } = useUser();
   const { profile, fetchProfile, editHobbies } = useProfile();
   const [newHobby, setNewHobby] = useState<string[]>([]);
   const [hobbyInput, setHobbyInput] = useState<string>(""); // Track input value
-  const hobbiesInputRef = useRef<HTMLInputElement>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false); // Track saving state
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function UserInfo() {
     }
     setNewHobby([]); // Clear new hobbies
     setHobbyInput(""); // Clear input field
+    setIsSaving(false); // Reset saving state
   };
 
   const handleAddHobby = () => {
@@ -39,6 +42,7 @@ export default function UserInfo() {
     if (newHobby.length === 0) {
       return;
     }
+    setIsSaving(true); // Show spinner
     try {
       await editHobbies(newHobby);
       setNewHobby([]); // Clear new hobbies
@@ -46,6 +50,16 @@ export default function UserInfo() {
       fetchProfile(); // Refresh profile data
     } catch (error) {
       console.error("Failed to save hobbies:", error);
+    } finally {
+      setIsSaving(false); // Hide spinner
+    }
+  };
+
+  const deleteHobby = (event: React.MouseEvent, id: string) => {
+    console.log(id);
+    const hobby = event.currentTarget.parentElement?.textContent?.trim();
+    if (hobby) {
+      // setNewHobby((prevHobbies) => prevHobbies.filter((h) => h !== hobby));
     }
   };
 
@@ -70,7 +84,7 @@ export default function UserInfo() {
         <h2 className="mt-4 text-lg font-semibold text-gray-800">Hobbies</h2>
         <ul className="list-none list-inside text-gray-700">
           {hobbies.length > 0 ? (
-            hobbies.map((hobby) => <li key={hobby}>🚀 {hobby}</li>)
+            hobbies.map((hobby) => <li key={hobby}>🚀 {hobby} </li>)
           ) : (
             <li>No hobbies listed</li>
           )}
@@ -117,7 +131,7 @@ export default function UserInfo() {
             Cancel
           </button>
         </div>
-        <div className="m8">
+        <div className="my-8">
           {newHobby.length > 0 && (
             <div>
               <p className="text-gray-500">New hobbies:</p>
@@ -129,19 +143,38 @@ export default function UserInfo() {
             </div>
           )}
         </div>
+        <div className="my-8">
+          <ul>
+            {hobbies.length > 0 &&
+              hobbies.map((hobby) => (
+                <li className="flex justify-between my-1" key={hobby}>
+                  🚀 {hobby}{" "}
+                  <span
+                    className="x-delete"
+                    onClick={() => deleteHobby(event, hobby)}
+                  >
+                    ❌
+                  </span>
+                </li>
+              ))}
+          </ul>
+        </div>
         <div className="my-4 text-center m-auto">
-          <button
-            style={{ minWidth: "5rem" }}
-            className={`px-4 py-2 rounded ${
-              newHobby.length === 0
-                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-            onClick={handleSave}
-            disabled={newHobby.length === 0} // Disable if no hobbies to save
-          >
-            Save
-          </button>
+          {isSaving ? (
+            <div className="spinner border-4 border-t-4 border-blue-500 rounded-full w-8 h-8 animate-spin"></div>
+          ) : (
+            <button
+              className={`px-4 py-2 rounded ${
+                newHobby.length === 0
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+              onClick={handleSave}
+              disabled={newHobby.length === 0}
+            >
+              Save
+            </button>
+          )}
         </div>
       </dialog>
     </section>
